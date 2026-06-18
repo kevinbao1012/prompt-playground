@@ -17,6 +17,12 @@
   "bugs": {
     "url": "https://github.com/kevinbao1012/prompt-playground/issues"
   },
-  "homepage": "https://github.com/kevinbao1012/prompt-playground#readme"
-  
+  "homepage": "https://github.com/kevinbao1012/prompt-playground#readme",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
 }
