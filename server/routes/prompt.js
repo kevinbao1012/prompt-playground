@@ -47,4 +47,15 @@ router.get('/history', (req, res) => {
   res.json({ history })
 })
 
+router.get('/status', (req, res) => {
+  const key = `rate:${req.ip}`
+  const count = redis.get(key) || 0
+  const resetIn = redis.ttl(key)
+  const remaining = Math.max(0, 10 - count) // 10 = your LIMIT
+
+  console.log('debug check', {key, count, resetIn, remaining})
+
+  res.json({ remaining, limit: 10, resetIn: resetIn === -1 ? 0 : resetIn })
+})
+
 export default router

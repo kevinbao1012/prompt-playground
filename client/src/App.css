@@ -207,3 +207,14 @@ input[type="submit"]:disabled {
   color: var(--text-dim);
   margin-top: 8px;
 }
+
+.success {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--success);
+  background: rgba(95, 191, 143, 0.1);
+  border: 1px solid rgba(95, 191, 143, 0.3);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+}

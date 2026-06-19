@@ -10,6 +10,8 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [history, setHistory] = useState([])
   const [showHistory, setShowHistory] = useState(false)
+  const [countdown, setCountdown] = useState(null)
+  const [justReset, setJustReset] = useState(false)
 
   function handleChange(e) {
     setMyText(e.target.value)
@@ -21,9 +23,44 @@ function App() {
     setHistory(Array.isArray(data.history) ? data.history : [])
   }
 
+  async function loadStatus() {
+  const res = await fetch('/api/status')
+  const data = await res.json()
+  setRemaining(data.remaining)
+  setLimit(data.limit)
+  if (data.resetIn > 0) {
+    setCountdown(data.resetIn)
+  }
+  }
+
   useEffect(() => {
   loadHistory()
+  loadStatus()
   }, [])
+
+  useEffect(() => {
+  if (countdown === null) return
+
+  if (countdown <= 0) {
+  setCountdown(null)
+  setRemaining(limit)
+  setJustReset(true)
+  setTimeout(() => setJustReset(false), 3000)
+  return
+}
+
+  const timer = setTimeout(() => {
+    setCountdown(countdown - 1)
+  }, 1000)
+
+  return () => clearTimeout(timer)
+  }, [countdown, limit])
+
+  useEffect(() => {
+  if (remaining !== null && Number(remaining) === 0 && countdown === null) {
+    loadStatus()
+  }
+}, [remaining])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -44,7 +81,8 @@ function App() {
       const data = await res.json()
 
       if (res.status === 429) {
-        setError(`Rate limit exceeded. Try again in ${data.resetsIn}`)
+        const seconds = parseInt(data.resetsIn)
+        setCountdown(seconds)
         return
       } else {
         setResponse(data.response)
@@ -100,12 +138,21 @@ function App() {
         placeholder="Type a prompt..."
       />
       <div className="submit-row">
-        <input type="submit" disabled={loading} value={loading ? "thinking..." : "run →"} />
+      <input
+        type="submit"
+        disabled={loading || (countdown !== null && countdown > 0) || Number(remaining) === 0}
+        value={loading ? "thinking..." : (countdown > 0 ? `wait ${countdown}s` : "run →")}
+      />   
       </div>
     </form>
 
+    {countdown !== null && countdown > 0 && (
+      <p className="error">Rate limit exceeded. Try again in {countdown}s</p>
+    )}
+    {justReset && (
+      <p className="success">You're good to go!</p>
+    )}
     {error && <p className="error">{error}</p>}
-    {response && <p className="response">{response}</p>}
 
     <button onClick={() => {
       setShowHistory(prev => !prev)
