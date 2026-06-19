@@ -4,18 +4,42 @@ import { rateLimiter } from '../middleware/rateLimiter.js'
 
 const router = express.Router()
 
-router.post('/prompt', rateLimiter, (req, res) => {
+router.post('/prompt', rateLimiter, async (req, res) => {
   const { prompt } = req.body
 
   if (!prompt) {
     return res.status(400).json({ error: 'Prompt is required' })
   }
 
-  const response = `You said: ${prompt}`
+  try {
+    const aiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'openrouter/free',
+        messages: [{ role: 'user', content: prompt }]
+      })
+    })
 
-  redis.lpush('history', { prompt, response, timestamp: Date.now() })
+    const data = await aiRes.json()
 
-  res.json({ response })
+    if (!aiRes.ok) {
+      console.error(data)
+      return res.status(500).json({ error: 'AI request failed' })
+    }
+
+    const response = data.choices[0].message.content
+
+    redis.lpush('history', { prompt, response, timestamp: Date.now() })
+
+    res.json({ response })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Something went wrong' })
+  }
 })
 
 router.get('/history', (req, res) => {
