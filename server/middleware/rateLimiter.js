@@ -1,7 +1,7 @@
 import redis from '../../my-redis/index.js'
 
 const LIMIT = 10
-const WINDOW = 60 * 60 // 1 hour in seconds
+const WINDOW = 60 //1 minute in seconds
 
 export async function rateLimiter(req, res, next) {
   const key = `rate:${req.ip}`
