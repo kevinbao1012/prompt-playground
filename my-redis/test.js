@@ -9,3 +9,7 @@ console.log(redis.ttl('foo'))   // ~2
 setTimeout(() => {
   console.log(redis.get('foo')) // null
 }, 3000)
+
+redis.lpush('history', { prompt: 'hi', response: 'hello' })
+redis.lpush('history', { prompt: 'bye', response: 'goodbye' })
+console.log(redis.lrange('history', 0, -1))
