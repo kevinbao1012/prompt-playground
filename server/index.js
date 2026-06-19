@@ -14,9 +14,6 @@ app.use(cors({
 }))
 app.use(express.json())
 
-// apply rate limiter to all /api routes
-app.use('/api', rateLimiter)
-
 // routes
 app.use('/api', promptRoute)
 
